@@ -11,30 +11,20 @@ def convert_range(r, mapping):
     offset = mapping["destRange"][0] - mapping["srcRange"][0]
     return [r[0] + offset, r[1] + offset]
 
-# returns the start or end point in mapping's src range that overlaps range r
-# returns None if they do not overlap, or if r is entirely inside the mapping's srcRange
-def overlap_point(r, mapping):
-    srcRange = mapping["srcRange"]
-    if not overlaps(r, srcRange) or is_inside(r, srcRange):
-        return None
-    rStart, rEnd = r[0], r[1]
-    srcStart, srcEnd = srcRange[0], srcRange[1]
-    if rEnd > srcStart and rEnd <= srcEnd:
-        return srcStart, "start"
-    elif rStart < srcEnd and rStart >= srcStart:
-        return srcEnd, "end"
-    return None
-
 # returns a list of two ranges, which are range r split at the overlap point
-def split_range(r, overlap, type):
-    if type == "start":
-        return [[r[0], overlap - 1], [overlap, r[1]]]
+def split_range(range, map):
+    rStart, rEnd = range[0], range[1]
+    sStart, sEnd = map["srcRange"][0], map["srcRange"][1]
+
+    if rStart < sStart:
+        return [[rStart, sStart - 1], [sStart, rEnd]]
     else:
-        return [[r[0], overlap], [overlap + 1, r[1]]]
+        return [[rStart, sEnd], [sEnd + 1, rEnd]]
+
 
 maps = []
 seed_ranges = []
-with open("dec5_example_input.txt", "r") as text:
+with open("dec5_input.txt", "r") as text:
     data = text.readlines()
 
     seeds = data[0].replace("seeds: ", "").replace("\n", "").split(" ")
@@ -76,8 +66,7 @@ with open("dec5_example_input.txt", "r") as text:
                 if is_inside(range, map["srcRange"]):
                     nextRanges.append(convert_range(range, map))
                 else:
-                    overlapPoinr, pointType = overlap_point(range, map)
-                    mapQ.extend(split_range(range, overlapPoinr, pointType))
+                    mapQ.extend(split_range(range, map))
                 break
             if not foundOverlap:
                 nextRanges.append(range)
