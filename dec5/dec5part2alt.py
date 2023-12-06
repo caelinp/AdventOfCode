@@ -1,38 +1,41 @@
-def preprocess_map(mapping_list):
-    """ Preprocesses a list of mappings into a direct mapping dictionary. """
-    direct_map = {}
-    for mapping in mapping_list:
-        dest_start, src_start, range_length = mapping.values()
-        for i in range(range_length):
-            direct_map[src_start + i] = dest_start + i
-    return direct_map
+def map_range(src_start, src_end, map_rules):
+    """ Maps a range of numbers using the provided mapping rules. """
+    result = []
+    for dest_start, map_start, length in map_rules:
+        map_end = map_start + length - 1
+        dest_end = dest_start + length - 1
 
-def find_minimum_location(seeds, maps):
-    """ Finds the minimum location number for the given seeds and maps. """
-    # Preprocess all maps into direct mappings
-    direct_maps = [preprocess_map(map) for map in maps]
+        # Check if the ranges intersect
+        if src_end >= map_start and src_start <= map_end:
+            intersect_start = max(src_start, map_start)
+            intersect_end = min(src_end, map_end)
 
-    min_location = float("infinity")
+            # Calculate the destination range based on the intersection
+            offset = intersect_start - map_start
+            result.append((dest_start + offset, dest_start + offset + intersect_end - intersect_start))
+    
+    # Default mapping for unmapped values
+    if not result:
+        return [(src_start, src_end)]
+    
+    return result
 
-    # Iterate through each seed and find its corresponding location
-    for seed in seeds:
-        converted = seed
-        for direct_map in direct_maps:
-            converted = direct_map.get(converted, converted)
-        min_location = min(min_location, converted)
-
-    return min_location
+def apply_maps(seed_ranges, maps):
+    """ Applies the mapping rules to the seed ranges. """
+    for map_rules in maps:
+        new_ranges = []
+        for src_start, src_end in seed_ranges:
+            new_ranges.extend(map_range(src_start, src_end, map_rules))
+        seed_ranges = new_ranges
+    return seed_ranges
 
 # Read and parse the input file
 with open("dec5_input.txt", "r") as text:
     data = text.read().splitlines()
 
 # Processing seed ranges
-seed_ranges = [int(x) for x in data[0].replace("seeds: ", "").split()]
-seeds = set()
-for i in range(0, len(seed_ranges), 2):
-    start, length = seed_ranges[i], seed_ranges[i+1]
-    seeds.update(range(start, start + length))
+seed_input = [int(x) for x in data[0].replace("seeds: ", "").split()]
+seed_ranges = [(seed_input[i], seed_input[i] + seed_input[i + 1] - 1) for i in range(0, len(seed_input), 2)]
 
 # Parsing mappings
 maps = []
@@ -43,11 +46,14 @@ for line in data[1:]:
             maps.append(current_map)
             current_map = []
     else:
-        mapping = {k: int(v) for k, v in zip(["destStart", "srcStart", "range"], line.split())}
+        mapping = tuple(map(int, line.split()))
         current_map.append(mapping)
 if current_map:
     maps.append(current_map)
 
+# Apply the maps to the seed ranges
+final_ranges = apply_maps(seed_ranges, maps)
+
 # Find the minimum location
-min_location = find_minimum_location(seeds, maps)
+min_location = min(start for start, _ in final_ranges)
 print(min_location)
