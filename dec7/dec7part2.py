@@ -28,6 +28,7 @@ def get_value(hand):
     return int(value)
 
 def get_hand_type(hand):
+    # track the counts of each card other than jokers separately from the jokers
     cards = {}
     jokers = 0
     for card in hand:
@@ -36,66 +37,55 @@ def get_hand_type(hand):
         else:
             cards[card] = cards.get(card, 0) + 1
 
+    # if we have four or five jokers, automatically five of a kind so we can return right away
     if jokers == 4 or jokers == 5:
         return "five_of_kind"
     
     threeCards = False
     onePair = False
-    twoPairs = False
     for card in cards:
         # check for five of kind
-        if cards[card] == 5:
+        if cards[card] + jokers == 5:
             return "five_of_kind"
         # check for four of kind
-        if cards[card] == 4:
-            if jokers == 1:
-                return "five_of_kind"
-            else:
-                return "four_of_kind"
-        if cards[card] == 3:
-            if jokers == 2:
-                return "five_of_kind"
-            if jokers == 1:
-                return "four_of_kind"
+        elif cards[card] + jokers == 4:
+            return "four_of_kind"
+        elif cards[card] == 3:
             threeCards = True
-        if cards[card] == 2:
-            if jokers == 3:
-                return "five_of_kind"
-            elif jokers == 2:
-                return "four_of_kind"
-            twoPairs = onePair
+        elif cards[card] == 2:
+            # if onePair was already set, then we have detected two pairs, so we know the hand type
+            if onePair:
+                # one joker turns two pairs into a full house
+                if jokers == 1:
+                    return "full_house"
+                else:
+                    return "two_pairs"
             onePair = True
     
-    if jokers == 3:
-        return "four_of_kind"
-    if threeCards and jokers == 1:
-        return "four_of_kind"
-    
-    if onePair and jokers == 2:
-        return "four_of_kind"
-
+    # full house
     if threeCards and onePair:
         return "full_house"
-    
-    if threeCards:
+
+    # three of kind
+    elif threeCards:
         return "three_of_kind"
     
-    if twoPairs:
-        if jokers == 1:
-            return "full_house"
-        return "two_pairs"
-    
-    if onePair:
+    # one pair
+    elif onePair:
+        # we can turn a pair into a triplet with one joker
         if jokers == 1:
             return "three_of_kind"
         return "one_pair"
     
-    if jokers == 2:
+    # with two jokers we can turn any high card into a three of kind
+    elif jokers == 2:
         return "three_of_kind"
     
-    if jokers == 1:
+    # with one joker we can turn any high card into a one pair
+    elif jokers == 1:
         return "one_pair"
     
+    # else it's just a high card
     else:
         return "high_card"
 
