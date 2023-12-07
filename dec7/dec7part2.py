@@ -41,8 +41,8 @@ def get_hand_type(hand):
     if jokers == 4 or jokers == 5:
         return "five_of_kind"
     
-    threeCards = False
-    onePair = False
+    three_cards = False
+    one_pair = False
     for card in cards:
         # check for five of kind
         if cards[card] + jokers == 5:
@@ -51,27 +51,27 @@ def get_hand_type(hand):
         elif cards[card] + jokers == 4:
             return "four_of_kind"
         elif cards[card] == 3:
-            threeCards = True
+            three_cards = True
         elif cards[card] == 2:
-            # if onePair was already set, then we have detected two pairs, so we know the hand type
-            if onePair:
+            # if one_pair was already set, then we have detected two pairs, so we know the hand type
+            if one_pair:
                 # one joker turns two pairs into a full house
                 if jokers == 1:
                     return "full_house"
                 else:
                     return "two_pairs"
-            onePair = True
+            one_pair = True
     
     # full house
-    if threeCards and onePair:
+    if three_cards and one_pair:
         return "full_house"
 
     # three of kind
-    elif threeCards:
+    elif three_cards:
         return "three_of_kind"
     
     # one pair
-    elif onePair:
+    elif one_pair:
         # we can turn a pair into a triplet with one joker
         if jokers == 1:
             return "three_of_kind"
