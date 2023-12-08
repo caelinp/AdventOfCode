@@ -21,10 +21,10 @@ def encode_hand(hand):
 
 def get_value(hand):
     value = 0
-    multiplier = 10000000000
+    multiplier = 15*15*15*15
     for card in hand:
         value += card * multiplier
-        multiplier /= 100
+        multiplier /= 15
     return int(value)
 
 def get_hand_type(hand):
