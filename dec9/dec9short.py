@@ -1,1 +1,16 @@
-print("part 1: {}\npart 2: {}".format(*(list(map(sum, zip(*((lambda p: ([p.append([p[-1][i] - p[-1][i - 1] for i in range(1, len(p[-1]))]) for _ in range(len(p[-1]) - 1) if any(p[-1])], [p := p[:-2] + [[p[-2][0] - p[-1][0]] + [p[-1][-1] + p[-2][-1]]] for _ in range(len(p) - 1, 0, -1)])[1][-1][0])([h]) for h in [[int(n) for n in l.split()] for l in open("dpi.txt").read().split("\n") if l.strip()]))))[::-1])))
+input_file = "dec9_input.txt"
+
+def predict(pyramid):
+    # construct difference pyramid
+    while(any(pyramid[-1])):
+        pyramid += [[pyramid[-1][i] - pyramid[-1][i - 1] for i in range(1, len(pyramid[-1]))]]
+    # compute new first and last elements of each pyramid level and remove levels until 1 left. This will contain the a list of the two predicted values
+    while len(pyramid) > 1:
+        pyramid = pyramid[:-2] + [[pyramid[-2][0] - pyramid[-1][0]] + [pyramid[-1][-1] + pyramid[-2][-1]]]
+    return reversed(pyramid[0])
+
+with open(input_file, "r") as text:
+    data = text.read().split("\n")
+    histories = [[int(num) for num in line.split()] for line in data]
+    # Process each history and sum up the results
+    print("part 1: {}\npart 2: {}".format(*map(sum, zip(*([predict([history]) for history in histories])))))
