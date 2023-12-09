@@ -23,4 +23,4 @@ for line in open("input.txt").read().split("\n"):
     for color in min_amounts:
         power *= min_amounts[color]
     res[1] += power
-print("part 1: {}, part 2: {}".format(*res))
+print("part 1: {}\npart 2: {}".format(*res))

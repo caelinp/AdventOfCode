@@ -29,7 +29,7 @@ with open(input_file, "r") as text:
     print(step_counts)
     lcm = 1
     for steps in step_counts:
-        lcm = lcm*steps//gcd(lcm, steps)
+        lcm = lcm * steps // gcd(lcm, steps)
     print(lcm)
 
     
