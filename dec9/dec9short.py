@@ -10,7 +10,5 @@ def predict(pyramid):
     return reversed(pyramid[0])
 
 with open(input_file, "r") as text:
-    data = text.read().split("\n")
-    histories = [[int(num) for num in line.split()] for line in data]
     # Process each history and sum up the results
-    print("part 1: {}\npart 2: {}".format(*map(sum, zip(*([predict([history]) for history in histories])))))
+    print("part 1: {}\npart 2: {}".format(*map(sum, zip(*([predict([history]) for history in [[int(num) for num in line.split()] for line in text.read().split("\n")]])))))
