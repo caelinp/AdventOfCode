@@ -1,0 +1,1 @@
+print("part 1: {}\npart 2: {}".format(*map(sum, zip(*((lambda f, p: f(f, p, 0, 0))((lambda s, p, p1, p2: (p1, p2) if not any(p[-1]) else s(s, p[1:] + [[p[-2][0] - p[-1][0]] + p[-2] + [p[-1][-1] + p[-2][-1]]], p1 + p[-1][0], p2 + p[-2][-1])), [list(map(int, l.split())) for l in open("d9i.txt").read().split("\n")])))))))
