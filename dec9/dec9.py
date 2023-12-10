@@ -1,5 +1,3 @@
-input_file = "dec9_input.txt"
-
 def predict(pyramid):
     # construct difference pyramid
     while(any(pyramid[-1])):
@@ -10,8 +8,7 @@ def predict(pyramid):
         pyramid.pop()
     return reversed(pyramid[0])
 
-with open(input_file, "r") as text:
-    data = text.read().split("\n")
-    histories = [[int(num) for num in line.split()] for line in data]
-    # Process each history and sum up the results
-    print("part 1: {}\npart 2: {}".format(*map(sum, zip(*([predict([history]) for history in histories])))))
+# extract all histories into array
+histories = [[int(num) for num in line.split()] for line in open("input.txt").read().split("\n")]
+# Process each history and sum up the results
+print("part 1: {}\npart 2: {}".format(*map(sum, zip(*([predict([history]) for history in histories])))))
