@@ -50,11 +50,5 @@ def sum_distances(galaxies, empty_rows, empty_cols, multiplier):
 
 universe = [list(line) for line in open("input.txt").read().split("\n")]
 empty_rows, empty_cols = get_empty_rows_and_cols(universe)
-
 galaxies = get_galaxies(universe)
-
-p1_mult = 2
-p2_mult = 1000000
-
-distances = (sum_distances(galaxies, empty_rows, empty_cols, p1_mult), sum_distances(galaxies, empty_rows, empty_cols, p2_mult))
-print("part 1: {}\npart 2: {}".format(*distances))
+print("part 1: {}\npart 2: {}".format(sum_distances(galaxies, empty_rows, empty_cols, 2), sum_distances(galaxies, empty_rows, empty_cols, 1000000)))
