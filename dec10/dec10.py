@@ -19,7 +19,7 @@ def fill_area(matrix, loop, value, row, col, outside_inside):
         else:
             outside_inside[value].add((row, col))
             matrix[row][col] = symbol
-            north, east, south, west = get_north(row, col), get_east(row, col), get_south(row, col), get_west(row, col)
+            north, east, south, west = (row - 1, col), (row, col + 1), (row + 1, col), (row, col + 1)
             if north and north not in loop:
                 fill(*north)
             if east and east not in loop:
@@ -49,18 +49,6 @@ def reset_origin_pipe(matrix, origin):
         
 def is_origin(matrix, row, col):
     return is_in_bounds(matrix, row, col) and matrix[row][col] == 'S'
-
-def get_north(row, col):
-    return (row - 1, col)
-
-def get_east(row, col):
-    return (row, col + 1)
-
-def get_south(row, col):
-    return (row + 1, col)
-
-def get_west(row, col):
-    return (row, col - 1)
 
 def get_north_pipe(matrix, row, col, last):
     return (row - 1, col) if is_in_bounds(matrix, row - 1, col) and matrix[row - 1][col] in ['|','7','F', "S"] and (row - 1, col) != last else None
@@ -128,10 +116,10 @@ def get_loop_area(matrix, loop, outside_inside):
     for (row, col) in loop[1:]:
         pipe = matrix[row][col]
         directions = get_directions(matrix, row, col, last)
-        north = get_north(row, col)
-        south = get_south(row, col)
-        east = get_east(row, col)
-        west = get_west(row, col)
+        north = (row - 1, col)
+        south = (row + 1, col)
+        east = (row, col + 1)
+        west = (row, col - 1)
         if pipe == "|":
             if directions == ["N"]:
                 fill_area(matrix, loop, 0, *west, outside_inside)
@@ -174,7 +162,8 @@ def get_loop_area(matrix, loop, outside_inside):
             elif directions == ["W", "S"]:
                 fill_area(matrix, loop, 1, *north, outside_inside)
                 fill_area(matrix, loop, 1, *west, outside_inside)
-
+        if (len(outside_inside[0]) + len(outside_inside[1])) == len(matrix) * len(matrix[0]):
+            return                                     
         last = (row, col)
 
 
