@@ -1,43 +1,25 @@
-def is_valid(solution, original):
-    if len(solution) > len(original):
-        return False
-    for i in range(len(solution)):
-        if original[i] != "?" and solution[i] != original[i]:
-            return False
-    return True
-def unfold(data):
-    for line in data:
-        data[0] += (["?"] + data[0]) * 4
-        data[1] += data[1] * 4
-def count_arrangements(springs):
+from functools import cache
+@cache
+def count_arrangements(pattern, groups):
     arrangements = 0
-    original = springs[0]
-    groups = [int(group) for group in springs[1].split(',')]
-    def backtrack(cur, groups):
-        nonlocal arrangements
-        nonlocal original
-        if not is_valid(cur, original) or len(cur) == len(original) and groups:
-            return
-        if not groups:
-            cur += "." * (len(original) - len(cur))
-            arrangements += is_valid(cur, original)
-            return
-        while len(cur) < len(original):
-            to_add = "#" * groups[0] 
-            if len(groups) > 1:
-                to_add += "." 
-            backtrack(cur + to_add, groups[1:])
-            cur += "."
-    backtrack("", groups)
+    if not groups:
+        return not "#" in pattern
+    while sum(groups) + len(groups) - 1 <= len(pattern):
+        to_add = "#" * groups[0] + ("." if len(groups) > 1 else "")
+        if not any(pattern[i] != "?" and pattern[i] != to_add[i] for i in range(len(to_add))):
+            arrangements += count_arrangements(pattern[len(to_add):], groups[1:])
+        if pattern[0] == "#":
+            break
+        pattern = pattern[1:]
     return arrangements
         
-data = [line.split() for line in open("example_input.txt").read().split("\n")]
-unfold(data)
-print(data)
-arrangements_sum = 0
-for line in data:
-    arrangements_sum += count_arrangements(line)
-print(arrangements_sum)
+p1, p2 = 0, 0
+for line in [line.split() for line in open("input.txt").read().split("\n")]:
+    p1 += count_arrangements(line[0], tuple(int(group) for group in line[1].split(',')))
+    line = ["?".join([line[0]] * 5), ",".join([line[1]] * 5)]
+    p2 += count_arrangements(line[0], tuple(int(group) for group in line[1].split(',')))
+print("part 1: {}\npart 2: {}".format(p1, p2))
+
     
 
 
