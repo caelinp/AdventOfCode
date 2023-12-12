@@ -11,14 +11,12 @@ def is_in_bounds(matrix, row, col):
 
 def fill_area(matrix, loop, value, row, col, outside_inside):
     loop = set(loop)
-    symbol = "I" if value else "O"
     def fill(row, col):
         nonlocal value
         if not is_in_bounds(matrix, row, col) or (row, col) in loop or (row, col) in outside_inside[0] or (row, col) in outside_inside[1]:
             return
         else:
             outside_inside[value].add((row, col))
-            matrix[row][col] = symbol
             north, east, south, west = (row - 1, col), (row, col + 1), (row + 1, col), (row, col + 1)
             if north and north not in loop:
                 fill(*north)
@@ -162,7 +160,7 @@ def get_loop_area(matrix, loop, outside_inside):
             elif directions == ["W", "S"]:
                 fill_area(matrix, loop, 1, *north, outside_inside)
                 fill_area(matrix, loop, 1, *west, outside_inside)
-        if (len(outside_inside[0]) + len(outside_inside[1])) == len(matrix) * len(matrix[0]):
+        if (len(outside_inside[0]) + len(outside_inside[1]) + len(loop)) == len(matrix) * len(matrix[0]):
             return                                     
         last = (row, col)
 
@@ -211,8 +209,6 @@ def get_next_pipe(matrix, row, col, last):
         elif (west := get_west_pipe(matrix, row, col, last)):
             return west
     return None
-
-sys.setrecursionlimit(10000)
 
 matrix = [list(line) for line in open("input.txt").read().split("\n")]
 origin = get_origin(matrix)
