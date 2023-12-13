@@ -20,7 +20,6 @@ def get_galaxies(universe):
 def sum_distances(galaxies, empty_rows, empty_cols, multiplier):
     return sum(get_distance(galaxies[i], galaxies[j], empty_rows, empty_cols, multiplier) for i in range(len(galaxies) - 1) for j in range(i + 1, len(galaxies)))
 
-
 universe = [list(line) for line in open("input.txt").read().split("\n")]
 empty_rows, empty_cols = get_empty_rows_and_cols(universe)
 galaxies = get_galaxies(universe)

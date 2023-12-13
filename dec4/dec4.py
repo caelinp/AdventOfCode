@@ -1,37 +1,17 @@
-res = 0
-with open("dec4_input.txt", "r") as text:
-    data = text.readlines()
-    game = 1
-    for card in data:
-        card = card.replace("\n", "")
-        score = 0
-        cardInfo = card.split(":")[1].split("|")
-        winning_dirty = cardInfo[0].split(" ")
-        winning = set()
-        for entry in winning_dirty:
-            if entry.isnumeric():
-                winning.add(entry)
-        myNums_dirty = cardInfo[1].split(" ")
-        myNums = []
-        myWinning = []
-        for entry in myNums_dirty:
-            if entry.isnumeric():
-                myNums.append(entry)
-        for entry in myNums:
-            if entry in winning:
-                myWinning.append(entry)
-                if score == 0:
-                    score = 1
-                else:
-                    score *= 2
-        print("winning numbers: ")
-        print(winning)
-        print("my numbers: ")
-        print(myNums)
-        print("my winning numbers: ")
-        print(myWinning)
-        print("card score: " + str(score))      
-        game += 1  
-        res += score
-print(res)
-        
+p1 = 0
+match_map = {}
+for i, card in enumerate(open("input.txt").read().split("\n")):
+    winning, my_nums = [nums.split() for nums in card.split(":")[1].split("|")]
+    score = 0
+    matches = 0
+    for entry in my_nums:
+        score, matches = ((1 if score == 0 else score * 2), matches + 1) if entry in winning else (score, matches)
+    match_map[i + 1] = matches
+    p1 += score
+p2 = 0
+copies = {i : 1 for i in match_map}
+for game in match_map:
+    for i in range(match_map[game]):
+        copies[game + i + 1] += copies[game]
+    p2 += copies[game]
+print("part 1: {}\npart 2: {}".format(p1, p2))
