@@ -1,40 +1,32 @@
-input_file = "input.txt"
-hand_types = {"five_of_kind": [], "four_of_kind": [], "full_house": [], "three_of_kind": [], "two_pairs": [], "one_pair": [], "high_card": []}
+def encode_hand(hand, jokers=False):
+    face_encoding = {"A": 13, "K": 12, "Q": 11, "J": 1, "T": 10} if jokers else {"A": 14, "K": 13, "Q": 12, "J": 11, "T": 10}
+    return [int(card) if card.isnumeric() else face_encoding[card] for card in list(hand)]
 
-def encode_hand(hand):
-    hand = list(hand)
-    hand_encoded = []
-    for card in hand:
-        if card == "A":
-            hand_encoded.append(14)
-        elif card == "K":
-            hand_encoded.append(13)
-        elif card == "Q":
-            hand_encoded.append(12)
-        elif card == "J":
-            hand_encoded.append(11)
-        elif card == "T":
-            hand_encoded.append(10)
-        else:
-            hand_encoded.append(int(card))
-    return hand_encoded
-
-def get_value(hand):
+def get_value(hand, jokers=False):
     value = 0
-    multiplier = 15*15*15*15
+    base = 14 if jokers else 15
+    multiplier = base ** 4
     for card in hand:
         value += card * multiplier
-        multiplier /= 15
+        multiplier /= base
     return int(value)
 
-def get_hand_type(hand):
+def get_hand_type(hand, j_is_joker=False):
+    # track the counts of each card other than jokers separately from the jokers
     cards = {}
+    jokers = 0
     for card in hand:
-        cards[card] = cards.get(card, 0) + 1
-    
-    threeCards = False
-    twoCards = False
-    twoPairs = False
+        if card == "J" and j_is_joker:
+            jokers += 1
+        else:
+            cards[card] = cards.get(card, 0) + 1
+    # if we have four or five jokers, automatically five of a kind so we can return right away
+    if j_is_joker:
+        if jokers == 4 or jokers == 5:
+            return "five_of_kind"
+        cards[max(cards, key=cards.get)] += jokers
+
+    three_cards = one_pair= False
     for card in cards:
         # check for five of kind
         if cards[card] == 5:
@@ -43,77 +35,61 @@ def get_hand_type(hand):
         if cards[card] == 4:
             return "four_of_kind"
         if cards[card] == 3:
-            threeCards = True
+            three_cards = True
         if cards[card] == 2:
-            twoPairs = twoCards
-            twoCards = True
+            if one_pair:
+                return "two_pairs"
+            one_pair = True
 
-    if threeCards and twoCards:
+    if three_cards and one_pair:
         return "full_house"
-    
-    if threeCards:
+    elif three_cards:
         return "three_of_kind"
-    
-    if twoPairs:
-        return "two_pairs"
-    
-    if twoCards:
+    elif one_pair:
         return "one_pair"
-    
     else:
         return "high_card"
 
-def categorize_hand(hand_and_bid):
+def categorize_hand(hand_and_bid, hand_types, jokers=False):
     hand, bid = hand_and_bid
-    hand_encoded = encode_hand(hand)
-    value = get_value(hand_encoded)
+    hand_encoded = encode_hand(hand, jokers)
+    value = get_value(hand_encoded, jokers)
     hand_obj = [hand, hand_encoded, value, bid]
-    hand_type = get_hand_type(hand_encoded)
+    hand_type = get_hand_type(hand, jokers)
     hand_types[hand_type].append(hand_obj)
     
-with open(input_file, "r") as text:
-    data = text.read().split("\n")
-    for line in data:
-        hand_and_bid = line.split()
-        categorize_hand(hand_and_bid)
-    
+hand_types_p1 = {"five_of_kind": [], "four_of_kind": [], "full_house": [], "three_of_kind": [], "two_pairs": [], "one_pair": [], "high_card": []}
+hand_types_p2 = {"five_of_kind": [], "four_of_kind": [], "full_house": [], "three_of_kind": [], "two_pairs": [], "one_pair": [], "high_card": []}
 
-    # now sort by card rank within categories
-    for hand_list in hand_types:
-        hand_types[hand_list].sort(key = lambda x: x[2])
+for line in open("input.txt").read().split("\n"):
+    hand_and_bid = line.split()
+    categorize_hand(hand_and_bid, hand_types_p1)
+    categorize_hand(hand_and_bid, hand_types_p2, True)
 
-    score = 0
-    rank = 1
-    # lowest rank cards to highest
-    for hand in hand_types["high_card"]:
-        score += rank * int(hand[3])
+# now sort by card rank within categories
+for hand_list in hand_types_p1:
+    hand_types_p1[hand_list].sort(key = lambda x: x[2])
+
+for hand_list in hand_types_p2:
+    hand_types_p2[hand_list].sort(key = lambda x: x[2])
+
+p1 = 0
+rank = 1
+# lowest rank cards to highest
+for hand_type in reversed(hand_types_p1.values()):
+    for hand in hand_type:
+        p1 += rank * int(hand[3])
+        rank += 1
+p2 = 0
+rank = 1
+# lowest rank cards to highest
+for hand_type in reversed(hand_types_p2.values()):
+    for hand in hand_type:
+        p2 += rank * int(hand[3])
         rank += 1
 
-    for hand in hand_types["one_pair"]:
-        score += rank * int(hand[3])
-        rank += 1
-    
-    for hand in hand_types["two_pairs"]:
-        score += rank * int(hand[3])
-        rank += 1
-    
-    for hand in hand_types["three_of_kind"]:
-        score += rank * int(hand[3])
-        rank += 1
+print("part 1: {}\npart 2: {}".format(p1, p2))
 
-    for hand in hand_types["full_house"]:
-        score += rank * int(hand[3])
-        rank += 1
-    
-    for hand in hand_types["four_of_kind"]:
-        score += rank * int(hand[3])
-        rank += 1
-    
-    for hand in hand_types["five_of_kind"]:
-        score += rank * int(hand[3])
-        rank += 1
-    
-    print(score)
 
 
     
