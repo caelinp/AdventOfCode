@@ -1,4 +1,4 @@
-input_file = "dec7_input.txt"
+input_file = "input.txt"
 hand_types = {"five_of_kind": [], "four_of_kind": [], "full_house": [], "three_of_kind": [], "two_pairs": [], "one_pair": [], "high_card": []}
 
 def encode_hand(hand):

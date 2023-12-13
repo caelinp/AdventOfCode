@@ -30,75 +30,58 @@ def split_range(range, map):
     else:
         return [[rStart, sEnd], [sEnd + 1, rEnd]]
 
-
-maps = []
-
-data = [group.split("\n") for group in open("example_input.txt").read().split("\n\n")]
-seeds = [int(seed) for seed in data[0][0].split()[1:]]
-print(seeds)
-seed_ranges = [[seeds[i], seeds[i] + seeds[i + 1] - 1] for i in range(0, len(seeds) , 2)]
-print(seed_ranges)
-with open("example_input.txt", "r") as text:
-    data = text.readlines()
-
-    seeds = data[0].replace("seeds: ", "").replace("\n", "").split(" ")
-    for i in range(0, len(seeds), 2):
-        start = int(seeds[i])
-        end = start + int(seeds[i + 1]) - 1
-        seed_ranges.append([start, end])
-    
-    # parsing out data:
-    groups = "".join(data[1:]).split("\n\n")
-    mapGroups = []
-    mapGroupIdx = 0
-    for group in groups:
-        group = group.split("\n")
-        cleaned_lines = []
-        for line in group:
-            if line != '':
-                cleaned_lines.append(line)
-        mapGroups.append([])
-        for line in cleaned_lines[1:]:
-            dest, source, range = line.split(' ')
-            dest, source, range = int(dest), int(source), int(range)
-            mapGroups[mapGroupIdx].append({"srcRange": [source, source + range - 1], "destRange": [dest, dest + range - 1]})
-        mapGroupIdx += 1
-
-    # mapQ stores all the ranges at one level, that have yet to be compared against ranges in the next mapping level
-    # if ranges overlap with ranges in the next mapping level, they are split along the overlap points and put back into the map queue
-    mapQ = seed_ranges
-
-    # iterate through all mapping levels in the mapGroups
-    for mapGroup in mapGroups:
+def get_min_location(seed_ranges, map_groups):
+    # iterate through all mapping levels in the map_groups
+    map_q = seed_ranges
+    for map_group in map_groups:
         # keep processing mappings at this level until all overlaps are detected and ranges are split
-        nextRanges = []
-        while mapQ:
-            range = mapQ.pop(0)
-            foundOverlap = False
-            for map in mapGroup:
+        next_ranges = []
+        while map_q:
+            range = map_q.pop(0)
+            found_overlap = False
+            for map in map_group:
                 # do nothing if the range does not overlap with the src range we're checking
                 if not overlaps(range, map["srcRange"]):
                     continue
                 # else there is some kind of overlap
-                foundOverlap = True
+                found_overlap = True
                 # if range is completely inside the mapping's src range, we can convert the range and add it to the next ranges to be processed by the next map group
                 if is_inside(range, map["srcRange"]):
-                    nextRanges.append(convert_range(range, map))
+                    next_ranges.append(convert_range(range, map))
                 # else there are more complex overlaps, and some splitting has to be done of the range, and these splits need to be put back in the queue for further processing
                 else:
-                    mapQ.extend(split_range(range, map))
+                    map_q.extend(split_range(range, map))
                 # if an overlap was detected, we don't need to keep comparing the range against more mappings, as its been either split up or converted
                 # so break here
                 break
             # if no overlap of the range was detected in all the mappings, then there was no mapping for this range, so add it to the next ranges to be be processed by the next map group
-            if not foundOverlap:
-                nextRanges.append(range)
-        # now that the mapQ is empty, fill it with all the next ranges to be processed by the next map group
-        mapQ = nextRanges
-    
-    # the ranges in the final mapQ after all map groups were processed, are the possible location ranges
-    locations = mapQ
+            if not found_overlap:
+                next_ranges.append(range)
+        # now that the map_q is empty, fill it with all the next ranges to be processed by the next map group
+        map_q = next_ranges
+    # the ranges in the final map_q after all map groups were processed, are the possible location ranges
+    locations = map_q
     # the minimum location will be the start value of one of the ranges in the locations array
-    minLocation = min(r[0] for r in locations)
-    print(minLocation)
+    return min(r[0] for r in locations)
+
+data = [group.split("\n") for group in open("input.txt").read().split("\n\n")]
+seeds = [int(seed) for seed in data[0][0].split()[1:]]
+map_groups = []
+for group in data[1:]:
+    maps = []
+    for line in group[1:]:
+        if line:
+            nums = [int(num) for num in line.split()]
+            maps.append({"srcRange" : [nums[1], nums[1] + nums[2] - 1], "destRange" : [nums[0], nums[0] + nums[2] - 1]})
+    map_groups.append(maps)
+
+seed_ranges = [[seed, seed] for seed in seeds]
+p1 = get_min_location(seed_ranges, map_groups)
+seed_ranges = [[seeds[i], seeds[i] + seeds[i + 1] - 1] for i in range(0, len(seeds), 2)]
+p2 = get_min_location(seed_ranges, map_groups)
+# map_q stores all the ranges at one level, that have yet to be compared against ranges in the next mapping level
+# if ranges overlap with ranges in the next mapping level, they are split along the overlap points and put back into the map queue
+
+print("part 1: {}\npart 2: {}".format(p1, p2))
+
 

@@ -11,8 +11,7 @@ def count_arrangements(pattern, groups):
         if pattern[0] == "#":
             break
         pattern = pattern[1:]
-    return arrangements
-        
+    return arrangements   
 p1, p2 = 0, 0
 for line in [line.split() for line in open("input.txt").read().split("\n")]:
     p1 += count_arrangements(line[0], tuple(int(group) for group in line[1].split(',')))
