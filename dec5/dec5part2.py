@@ -33,7 +33,7 @@ def split_range(range, map):
 
 maps = []
 seed_ranges = []
-with open("dec5_input.txt", "r") as text:
+with open("input.txt", "r") as text:
     data = text.readlines()
 
     seeds = data[0].replace("seeds: ", "").replace("\n", "").split(" ")
