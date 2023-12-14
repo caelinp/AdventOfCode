@@ -1,23 +1,33 @@
-input_file = "dec8_example_input.txt"
+from math import gcd
+instructions, data = open("input.txt").read().split("\n\n")
 mapping = {}
-with open(input_file, "r") as text:
-    instructions, data = text.read().split("\n\n")
-    instructions = list(instructions)
-    data = data.split("\n")
-    for line in data:
-        node, children = line.split(" = ")
-        children = children.replace("(", "").replace(")", "")
-        children = children.split(", ")
-        mapping[node] = children
-    
+starting_nodes = []
+for line in data.split("\n"):
+    node, children = line.split(" = ")
+    mapping[node] = children.replace("(", "").replace(")", "").split(", ")
+    if node[2] == "A":
+        starting_nodes.append(node)
+# part 1
+steps = 0
+node = "AAA"
+while node != "ZZZ":
+    for step in instructions:
+        if node == "ZZZ":
+            break
+        node = mapping[node][1 if step == 'R' else 0]
+        steps += 1
+# part 2
+step_counts = []
+for node in starting_nodes:
     steps = 0
-    node = "AAA"
-    while node != "ZZZ":
+    while node[2] != "Z":
         for step in instructions:
-            if node == "ZZZ":
+            if node[2] == "Z":
                 break
             node = mapping[node][1 if step == 'R' else 0]
             steps += 1
-    print(steps)
-
-    
+    step_counts.append(steps)
+lcm = 1
+for steps in step_counts:
+    lcm = lcm * steps // gcd(lcm, steps)
+print("part 1: {}\npart 2: {}".format(steps, lcm))
