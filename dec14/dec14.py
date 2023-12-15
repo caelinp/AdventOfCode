@@ -89,6 +89,14 @@ p1 = get_north_load_after_north_tilt(rocks)
 rock_patterns = {} # mapping of all rock patterns (as strings) to the idx at which they were reached
 loads = [] # list of north load values at every idx
 
+for i in range(1_000_000_000):
+    rocks = cycle(rocks)
+    if i % 10_000_000 == 0:
+        print(i)
+
+p2 = get_north_load(rocks)
+
+""""
 cycle_idx = 0
 while rocks not in rock_patterns:
     loads.append(get_north_load(rocks))
@@ -101,8 +109,7 @@ loop_length = len(rock_patterns) - loop_start
 offset = (1_000_000_000 - loop_start) % loop_length
 
 p2 = loads[loop_start + offset]
-
-
+"""
 print("part 1: {}\npart 2: {}".format(p1, p2))
 
 
