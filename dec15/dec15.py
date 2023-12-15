@@ -4,16 +4,13 @@ p1 = 0
 def get_hash(lens):
     hash = 0
     for c in lens:
-        hash += ord(c)
-        hash *= 17
-        hash %= 256
+        hash = ((hash + ord(c)) * 17) % 256
     return hash
 
 for step in steps:
     p1 += get_hash(step)
 
 p2 = 0
-
 box_map = {}
 
 for step in steps:
