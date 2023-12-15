@@ -33,7 +33,7 @@ for step in steps:
             box_map[hash] = {lens : focal}
 
 for box, lenses in box_map.items():
-    for i, (lens, length) in enumerate(lenses.items()):
-        p2 += (int(box) + 1) * (i + 1) * int(length)
+    for i, (lens, focal) in enumerate(lenses.items()):
+        p2 += (int(box) + 1) * (i + 1) * int(focal)
 
 print("part 1: {}\npart 2: {}".format(p1, p2))
