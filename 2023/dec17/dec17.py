@@ -13,10 +13,8 @@ def a_star(blocks, max_straight_steps=3, min_straight_steps=0):
     # don't count count heat loss for start block, so current path cost is 0
     visited = set()
     state = (heuristic((0, 0), goal), 0, (0, 0), 0, None)
-    while True:
+    while not(state[2] == goal and state[3] >= min_straight_steps):
         cur_path_cost, pos, steps_in_one_dir, dir = state[1], state[2], state[3], state[4]
-        if pos == goal and steps_in_one_dir >= min_straight_steps:
-            break
         # add neighbours of current position to frontier:
         if not dir:
             # if no direction yet, we are in starting square
