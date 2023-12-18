@@ -9,7 +9,7 @@ def heuristic(pos, goal):
 def a_star(blocks, max_straight_steps=3, min_straight_steps=0):
     frontier = []
     goal = (len(blocks) - 1, len(blocks[0]) - 1)
-    # state is current path cost + min heuiristic distance from pos to goal, current path cost, (row, col), number of steps taken in current direction, current direction
+    # state is current path cost + min heuristic distance from pos to goal, current path cost, (row, col), number of steps taken in current direction, current direction
     # don't count count heat loss for start block, so current path cost is 0
     visited = set()
     state = (heuristic((0, 0), goal), 0, (0, 0), 0, None)
