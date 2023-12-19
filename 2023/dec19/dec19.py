@@ -7,6 +7,7 @@ workflow_lines, parts = [section.split('\n') for section in open('input.txt').re
 workflows = {}
 accept_workflows = []
 
+# parse the workflow lines, and build tree of workflows that call other workflows, while recording a list of the locations of all acceptance points
 for workflow in workflow_lines:
     label, rules  = workflow.strip('}').split('{')
     rules = rules.split(',')
@@ -14,7 +15,7 @@ for workflow in workflow_lines:
     for i, rule in enumerate(rules):
         condition, effect = (None, rule) if ':' not in rule else rule.split(':')
         if effect == 'A':
-            accept_workflows.append((label, i))
+            accept_workflows.append((label, i)) # record workflow label and index of the Accept effect in the workflow
         elif effect != 'R':
             child = effect
             if child in workflows:
@@ -27,7 +28,34 @@ for workflow in workflow_lines:
     else:
         workflows[label] = [rules_parsed, None]
 
+p1 = 0
+part_idx = 0
+next_part = True
+# part 1: go through all parts and send them through the workflow, summing up ratings for all that are eventually accepted
+while part_idx < len(parts):
+    part = parts[part_idx]
+    x, m, a, s = [int((val.replace('{', '').replace('}', '')).split('=')[1]) for val in part.split(',')]
+    if next_part:
+        rules = workflows['in'][0]
+    for rule in rules:
+        condition, effect = rule
+        if not condition or eval(condition):
+            if effect == 'A':
+                p1 += x + m + a + s
+                next_part = True
+                part_idx += 1
+            elif effect == 'R':
+                next_part = True
+                part_idx += 1
+            else:
+                next_part = False
+                rules = workflows[effect][0]
+            break
+
 p2 = 0
+# part 2: starting from all the Accepts, recurse back through the parent workflows until we get to "in"
+# keep restricting the ranges for x, m, a, s based on the rules that had to have passed/failed to get to the Accept
+# take the product of the lengths of the x, m, a, s ranges needed to get to each A, and sum these products up
 for (label, rule_idx) in accept_workflows:
     ranges = {'x': [1, 4000], 'm': [1, 4000], 'a': [1, 4000], 's': [1, 4000]}
     rules, parent = workflows[label]
@@ -69,28 +97,7 @@ for (label, rule_idx) in accept_workflows:
         combos *= r[1] - r[0] + 1
     p2 += combos
 
-p1 = 0
-part_idx = 0
-next_part = True
-while part_idx < len(parts):
-    part = parts[part_idx]
-    x, m, a, s = [int((val.replace('{', '').replace('}', '')).split('=')[1]) for val in part.split(',')]
-    if next_part:
-        rules = workflows['in'][0]
-    for rule in rules:
-        condition, effect = rule
-        if not condition or eval(condition):
-            if effect == 'A':
-                p1 += x + m + a + s
-                next_part = True
-                part_idx += 1
-            elif effect == 'R':
-                next_part = True
-                part_idx += 1
-            else:
-                next_part = False
-                rules = workflows[effect][0]
-            break
+
 print("part 1: {}\npart 2: {}".format(p1, p2))
 
 
