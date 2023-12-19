@@ -27,7 +27,7 @@ for workflow in workflow_lines:
     else:
         workflows[label] = [rules_parsed, None]
 
-valid_ranges = []
+p2 = 0
 for (label, rule_idx) in accept_workflows:
     ranges = {'x': [1, 4000], 'm': [1, 4000], 'a': [1, 4000], 's': [1, 4000]}
     rules, parent = workflows[label]
@@ -64,17 +64,11 @@ for (label, rule_idx) in accept_workflows:
             break
         rules, parent = workflows[label]
         rule_idx = get_rule_index_from_effect(rules, desired_effect)
-    valid_ranges.append(ranges)
-
-p2 = 0
-for ranges in valid_ranges:
     combos = 1
     for r in ranges.values():
         combos *= r[1] - r[0] + 1
     p2 += combos
 
-
-workflow_lines, parts = [section.split('\n') for section in open('input.txt').read().split('\n\n')]
 p1 = 0
 part_idx = 0
 next_part = True
