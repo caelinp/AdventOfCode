@@ -24,6 +24,7 @@ def a_star(heightmap, start, end):
     state = (heuristic(start, end), 0, start)
     while not(state[2] == end):
         cur_path_cost, pos = state[1], state[2]
+        visited.add(pos)
         cur_height = ord('a') if pos == start else ord(heightmap[pos[0]][pos[1]])
         # add neighbours of current position to frontier:
 
@@ -36,9 +37,9 @@ def a_star(heightmap, start, end):
                     new_path_cost = cur_path_cost + 1
                     # need to increment steps in one direction if new dir is same as current dir, else reset it to 1
                     new_state = (heur_val + new_path_cost, new_path_cost, new_pos)
-                    visited.add(new_pos)
                     heappush(frontier, new_state)
         state = heappop(frontier)
+
     return state[1]            
 
 heightmap = [[height for height in row] for row in open('example_input.txt').read().split('\n')]
