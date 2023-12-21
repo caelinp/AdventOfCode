@@ -113,6 +113,3 @@ def solve(circuit):
 
 p1, p2 = solve(circuit)
 print("part 1: {}\npart 2: {}".format(p1, p2))
-
-
-

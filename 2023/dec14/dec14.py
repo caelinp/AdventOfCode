@@ -96,7 +96,7 @@ for i in range(1_000_000_000):
 
 p2 = get_north_load(rocks)
 
-""""
+
 cycle_idx = 0
 while rocks not in rock_patterns:
     loads.append(get_north_load(rocks))
@@ -109,7 +109,7 @@ loop_length = len(rock_patterns) - loop_start
 offset = (1_000_000_000 - loop_start) % loop_length
 
 p2 = loads[loop_start + offset]
-"""
+
 print("part 1: {}\npart 2: {}".format(p1, p2))
 
 
