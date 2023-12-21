@@ -1,96 +1,66 @@
 from collections import deque
-from math import gcd
+from math import gcd, lcm
 
 circuit = {} # map with keys as module labels, and values as the module objects
 pulse_counts = [0, 0]
 class FlipFlop:
-    def __init__(self, label, outputs):
-        self.label = label
+    def __init__(self, name, outputs):
+        self.name = name
         self.on = False # on and off state
         self.outputs = outputs # list of output labels
-        self.pulse_to_send = 1
-        self.received_pulses = deque()
-
-    def receive_pulse(self, pulse, input):
-        self.received_pulses.append(pulse)
-        if pulse == 0: # received low pulse
-            if self.on: # if it was on, turn it off and should send a low pulse to outputs
-                self.on = False
-                self.pulse_to_send = 0
-            else: # it was off, so turn it on and should send a high pulse to outputs
-                self.on = True
-                self.pulse_to_send = 1
-            self.should_send = True
-
-    def send_pulse(self): 
-        if self.received_pulses.popleft() == 0:
-            for output in self.outputs:
-                pulse_counts[self.pulse_to_send] += 1
-                #print(self.label + ' -' + self.pulse_to_send + '-> ' + output)
-                if output in circuit:
-                    circuit[output].receive_pulse(self.pulse_to_send, self.label)
-            return True
-        return False
-    
-    def __str__(self):
-        return f'FlipFlop: {self.label}, on: {self.on}, outputs: {self.outputs}, pulse_to_send: {self.pulse_to_send}, received_pulses: {self.received_pulses}'
-    
-class Conjunction:
-    def __init__(self, label, outputs):
-        self.label = label
-        self.outputs = outputs
-        self.input_memory = {}
-        self.pulse_to_send = 1
+        self.inputs = {}
 
     def add_input(self, input):
-        self.input_memory[input] = 0
-
-    def receive_pulse(self, pulse, input):
-        self.input_memory[input] = pulse
-        if all([pulse == 1 for pulse in self.input_memory.values()]):
-            self.pulse_to_send = 0
-        else:
-            self.pulse_to_send = 1
+        self.inputs[input] = None
     
-    def send_pulse(self):
-        return_val = True
-        for output in self.outputs:
-            pulse_counts[self.pulse_to_send] += 1
-            if output in circuit:
-                #print(self.label + ' -' + self.pulse_to_send + '-> ' + output)
-                circuit[output].receive_pulse(self.pulse_to_send, self.label)
-        return return_val
+    def update_state(self, pulse, input):
+        if pulse:
+            return None
+        else:
+            self.on = not self.on
+            return self.on
     
     def __str__(self):
-        return f'Conjunction: {self.label}, outputs: {self.outputs}, pulse_to_send: {self.pulse_to_send}, input_memory: {self.input_memory}'
+        return f'FlipFlop: on: {self.on}, inputs: {self.inputs}, outputs: {self.outputs}'
+    
+class Conjunction:
+    def __init__(self, name, outputs):
+        self.name = name
+        self.outputs = outputs
+        self.inputs = {}
+
+    def add_input(self, input):
+        self.inputs[input] = None
+
+    def update_state(self, pulse, input):
+        self.inputs[input] = pulse
+        return not all([mem == 1 for mem in self.inputs.values()])
+
+    
+    def __str__(self):
+        return f'Conjunction: inputs: {self.inputs} outputs: {self.outputs}'
 
 class Broadcaster:
-    def __init__(self, outputs):
-        self.label = 'broadcaster'
+    def __init__(self, name, outputs):
+        self.name = name
         self.outputs = outputs
-        self.pulse_to_send = 0
+        
     
-    def send_pulse(self):
-        return_val = True
-        for output in self.outputs:
-            pulse_counts[self.pulse_to_send] += 1            
-            if output in circuit:
-                #print(self.label + ' -' + self.pulse_to_send + '-> ' + output)
-                circuit[output].receive_pulse(self.pulse_to_send, self.label)
-        return return_val
+    def update_state(self, pulse, input):
+        return pulse
     
     def __str__(self):
-        return f'Broadcaster: outputs: {self.outputs}, pulse_to_send: {self.pulse_to_send}'
+        return f'Broadcaster: outputs: {self.outputs}'
 
 def print_circuit(circuit):
     print('\n')
-    for module in circuit.values():
-        print(module)
+    for name, module in circuit.items():
+        print(name, module)
 
 for connection in open('input.txt').read().split('\n'):
     outputs = connection.split('-> ')[1].split(', ')        
     if connection.startswith('broadcaster'):
-        circuit['broadcaster'] = Broadcaster(outputs)
+        circuit['broadcaster'] = Broadcaster('broadcaster', outputs)
     else:
         name = connection[1:].split(' ->')[0]
         if connection.startswith('%'):
@@ -103,49 +73,45 @@ for name, module in circuit.items():
         # if some module outputs to a Conjunction, we need to add it to the conjunction's input
         if output in circuit:
             output_module = circuit[output]
-            if type(output_module) is Conjunction:
+            if type(output_module) is not Broadcaster:
                 output_module.add_input(name)
 
-p2 = 0
+#print_circuit(circuit)
 
-nr_input_buttons_to_low = {}
-nr_module = circuit['nr'] 
-for input in nr_module.input_memory:
-    nr_input_buttons_to_low[input] = 0
 
-print(nr_input_buttons_to_low)
-button_pulse = 0
-while True:
-    button_pulse += 1
-    pulse_counts[0] += 1
-    #print('\nbutton -low-> broadcaster')
-
-    pulse_q = deque(['broadcaster'])
-    while pulse_q:
-        #print_circuit(circuit)
-        name = pulse_q.popleft()
-        if name in circuit:
-            module = circuit[name]
-            if send_val:=module.send_pulse():
-                pulse_q.extend(module.outputs)
-    
-    if button_pulse == 1000:
-        p1 = pulse_counts[1] * pulse_counts[0] 
-        print(p1)
-
+def solve(circuit):
+    nr_input_buttons_to_low = {}
     nr_module = circuit['nr'] 
-    if any([memory == 1 for memory in nr_module.input_memory.values()]):
-        print(nr_module)
-    for input, memory in nr_module.input_memory.items():
-        if memory == 1:
-            nr_input_buttons_to_low[input] = button_pulse + 1
-            print(nr_input_buttons_to_low)
-    if all([button_counts > 0 for button_counts in nr_input_buttons_to_low.values()]):
-        p2 = 1
-        for button_counts in nr_input_buttons_to_low.values():
-            p2 = p2 * button_counts // gcd(p2, button_counts)
-        break
+    for input in nr_module.inputs:
+        nr_input_buttons_to_low[input] = 0
 
+    button_pulse = 0
+    while True:
+        button_pulse += 1
+        pulse_counts[0] += 1
+        #print('\nbutton -low-> broadcaster')
+        broadcaster = circuit['broadcaster']
+        pulse_q = deque([(broadcaster, broadcaster.update_state(0, 'button'))])
+        while pulse_q:
+            #print_circuit(circuit)
+            module, pulse = pulse_q.popleft()
+            
+            for output in module.outputs:
+                pulse_counts[pulse] += 1
+                if output in circuit:
+                    if pulse and circuit[output].name == 'nr':
+                        if nr_input_buttons_to_low[module.name] == 0:
+                            nr_input_buttons_to_low[module.name] = button_pulse
+                        if all([button_pulse > 0 for button_pulse in nr_input_buttons_to_low.values()]):
+                            print(nr_input_buttons_to_low)
+                            p2 = lcm(*nr_input_buttons_to_low.values())
+                            return p1, p2
+                    if (new_signal := circuit[output].update_state(pulse, module.name)) is not None:
+                        pulse_q.append((circuit[output], new_signal))
+        if button_pulse == 1000:
+            p1 = pulse_counts[1] * pulse_counts[0] 
+
+p1, p2 = solve(circuit)
 print("part 1: {}\npart 2: {}".format(p1, p2))
 
 

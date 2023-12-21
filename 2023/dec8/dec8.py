@@ -1,4 +1,4 @@
-from math import gcd
+from math import gcd, lcm
 instructions, data = open("input.txt").read().split("\n\n")
 mapping = {}
 starting_nodes = []
@@ -27,7 +27,5 @@ for node in starting_nodes:
             node = mapping[node][1 if step == 'R' else 0]
             steps += 1
     step_counts.append(steps)
-lcm = 1
-for steps in step_counts:
-    lcm = lcm * steps // gcd(lcm, steps)
+lcm = lcm(*step_counts)
 print("part 1: {}\npart 2: {}".format(steps, lcm))
