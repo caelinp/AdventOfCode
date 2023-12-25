@@ -23,7 +23,6 @@ def would_bricks_overlap(b1, b2):
 
 def do_ranges_overlap(r1, r2):
     return not (r1[0] > r2[1] or r2[0] > r1[1])
-
 def drop_all_bricks_at_z(bricks, bricks_below, ids_to_bricks):
     [drop_brick(brick_id, bricks_below, ids_to_bricks) for brick_id in bricks]
 
